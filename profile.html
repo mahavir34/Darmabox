@@ -1,9 +1,10 @@
+<!-- profile.html -->
 <style>
     .profile-master { width: 100%; min-height: calc(100vh - 65px); background: #000; color: #fff; font-family: sans-serif; box-sizing: border-box; }
     .view-panel { display: none; width: 100%; padding: 0 16px; box-sizing: border-box; }
     .view-panel.active { display: block; }
 
-    /* 👤 मुख्य प्रोफ़ाइल लुक */
+    /* 👤 मुख्य प्रोफ़ाइल कार्ड */
     .profile-user-card { display: flex; align-items: center; gap: 14px; padding: 24px 0 16px 0; }
     .avatar-circle { width: 56px; height: 56px; background: #222226; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; border: 1px solid #2c2c2e; }
     .join-member-banner { background: linear-gradient(90deg, #ff2a5f, #ff7e00); padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
@@ -46,6 +47,7 @@
 
 <div class="profile-master">
 
+    <!-- VIEW 1: मुख्य प्रोफाइल स्क्रीन -->
     <div id="mainProfileView" class="view-panel active">
         <div class="profile-user-card">
             <div class="avatar-circle">👤</div>
@@ -109,6 +111,7 @@
         </div>
     </div>
 
+    <!-- VIEW 2: माय वॉलेट और टॉप-अप सब-पेज -->
     <div id="walletView" class="view-panel">
         <div class="sub-header">
             <button class="back-sub-btn" onclick="closeSubView()"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
@@ -127,6 +130,7 @@
         <p style="text-align:center; color:#8e8e93; font-size:14px; padding-top:40px;">You don't have any purchase records.</p>
     </div>
 
+    <!-- VIEW 3: अर्न रिवॉर्ड्स सब-पेज -->
     <div id="rewardsView" class="view-panel">
         <div class="sub-header">
             <button class="back-sub-btn" onclick="closeSubView()"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
@@ -154,6 +158,7 @@
         </div>
     </div>
 
+    <!-- VIEW 4: डाउनलोड लिस्ट सब-पेज -->
     <div id="downloadView" class="view-panel">
         <div class="sub-header">
             <button class="back-sub-btn" onclick="closeSubView()"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
@@ -165,6 +170,7 @@
         </div>
     </div>
 
+    <!-- VIEW 5: सेटिंग्स सब-पेज -->
     <div id="settingsView" class="view-panel">
         <div class="sub-header">
             <button class="back-sub-btn" onclick="closeSubView()"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
@@ -184,30 +190,31 @@
 </div>
 
 <script>
-    // सब-पेज खोलने और बंद करने का स्मूथ आर्किटेक्चर लॉजिक
+    // 🌟 क्लिक एरर फिक्स आर्किटेक्चर लॉजिक
     function openSubView(viewId) {
-        document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+        document.querySelectorAll('.view-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
         document.getElementById(viewId).classList.add('active');
     }
 
     function closeSubView() {
-        document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
-        document.getElementById('mainProfileView').add('active');
+        document.querySelectorAll('.view-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
+        document.getElementById('mainProfileView').classList.add('active'); // 👈 यहाँ पर टाइपो एरर फिक्स किया गया है
     }
 
-    // मास्टर फ़ायरबेस सिंक मैनेजर फ़ंक्शन
+    // मास्टर फ़ायरबेस डेटा सिंक
     function loadProfileData(user) {
         if(!user) return;
         
-        // यूज़र नेम सेटअप
         if(user.email) {
             document.getElementById('profEmail').innerText = user.email.split('@')[0] + " >";
         }
         
-        // असली ऐप जैसी आईडी जेनरेशन
         document.getElementById('profId').innerText = "ID: " + user.uid.substring(0, 9).toUpperCase() + " | Following 0";
         
-        // रीयल-टाइम वॉलेट बैलेंस डेटाबेस फ़ेचिंग
         db.collection("users").doc(user.uid).get().then(doc => {
             if(doc.exists) {
                 const userData = doc.data();
