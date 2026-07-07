@@ -64,15 +64,15 @@
         </div>
 
         <div class="menu-list">
-            <div class="menu-item" onclick="openSubView('walletView')">
+            <div class="menu-item" onclick="document.getElementById('mainProfileView').classList.remove('active'); document.getElementById('walletView').classList.add('active');">
                 <div class="menu-left"><span class="icon">📈</span>Top Up</div>
                 <div class="menu-right"><span class="arrow-right">❯</span></div>
             </div>
-            <div class="menu-item" onclick="openSubView('walletView')">
+            <div class="menu-item" onclick="document.getElementById('mainProfileView').classList.remove('active'); document.getElementById('walletView').classList.add('active');">
                 <div class="menu-left"><span class="icon">🪙</span>My Wallet</div>
                 <div class="menu-right"><span style="color:#ffcc00; font-weight:bold;" id="profCoins">🪙 0</span><span class="arrow-right">❯</span></div>
             </div>
-            <div class="menu-item" onclick="openSubView('rewardsView')">
+            <div class="menu-item" onclick="document.getElementById('mainProfileView').classList.remove('active'); document.getElementById('rewardsView').classList.add('active');">
                 <div class="menu-left"><span class="icon">🎁</span>Earn Rewards</div>
                 <div class="menu-right"><span style="background:#ff2a5f; color:#fff; font-size:11px; padding:2px 8px; border-radius:10px; font-weight:bold;">+20</span><span class="arrow-right">❯</span></div>
             </div>
@@ -87,18 +87,18 @@
                 <div class="menu-left"><span class="icon">⏰</span>History</div>
                 <div class="menu-right"><span class="arrow-right">❯</span></div>
             </div>
-            <div class="menu-item" onclick="openSubView('downloadView')">
+            <div class="menu-item" onclick="document.getElementById('mainProfileView').classList.remove('active'); document.getElementById('downloadView').classList.add('active');">
                 <div class="menu-left"><span class="icon">📥</span>Download</div>
                 <div class="menu-right"><span class="arrow-right">❯</span></div>
             </div>
         </div>
 
         <div class="menu-list">
-            <div class="menu-item" onclick="openSubView('settingsView')">
+            <div class="menu-item" onclick="document.getElementById('mainProfileView').classList.remove('active'); document.getElementById('settingsView').classList.add('active');">
                 <div class="menu-left"><span class="icon">🌐</span>Language & Settings</div>
                 <div class="menu-right">English<span class="arrow-right">❯</span></div>
             </div>
-            <div class="menu-item" onclick="openSubView('settingsView')">
+            <div class="menu-item" onclick="document.getElementById('mainProfileView').classList.remove('active'); document.getElementById('settingsView').classList.add('active');">
                 <div class="menu-left"><span class="icon">💬</span>Help & feedback</div>
                 <div class="menu-right"><span class="arrow-right">❯</span></div>
             </div>
@@ -111,7 +111,7 @@
 
     <div id="walletView" class="view-panel">
         <div class="sub-header">
-            <button class="back-sub-btn" onclick="closeSubView()"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+            <button class="back-sub-btn" onclick="document.getElementById('walletView').classList.remove('active'); document.getElementById('mainProfileView').classList.add('active');"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
             <h2 style="font-size:18px; font-weight:800;">My Wallet / Top Up</h2>
         </div>
         <div class="wallet-header-box">
@@ -129,7 +129,7 @@
 
     <div id="rewardsView" class="view-panel">
         <div class="sub-header">
-            <button class="back-sub-btn" onclick="closeSubView()"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+            <button class="back-sub-btn" onclick="document.getElementById('rewardsView').classList.remove('active'); document.getElementById('mainProfileView').classList.add('active');"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
             <h2 style="font-size:18px; font-weight:800;">Earn Rewards</h2>
         </div>
         <h3 style="font-size:14px; margin-bottom:12px; color:#ffcc00;">📅 Daily Check-in bonus</h3>
@@ -156,7 +156,7 @@
 
     <div id="downloadView" class="view-panel">
         <div class="sub-header">
-            <button class="back-sub-btn" onclick="closeSubView()"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+            <button class="back-sub-btn" onclick="document.getElementById('downloadView').classList.remove('active'); document.getElementById('mainProfileView').classList.add('active');"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
             <h2 style="font-size:18px; font-weight:800;">Downloads</h2>
         </div>
         <div style="text-align:center; padding-top:100px; color:#8e8e93;">
@@ -167,7 +167,7 @@
 
     <div id="settingsView" class="view-panel">
         <div class="sub-header">
-            <button class="back-sub-btn" onclick="closeSubView()"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+            <button class="back-sub-btn" onclick="document.getElementById('settingsView').classList.remove('active'); document.getElementById('mainProfileView').classList.add('active');"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
             <h2 style="font-size:18px; font-weight:800;">Settings & Support</h2>
         </div>
         <div class="menu-list" style="padding:0 12px;">
@@ -184,20 +184,6 @@
 </div>
 
 <script>
-    function openSubView(viewId) {
-        document.querySelectorAll('.view-panel').forEach(panel => {
-            panel.classList.remove('active');
-        });
-        document.getElementById(viewId).classList.add('active');
-    }
-
-    function closeSubView() {
-        document.querySelectorAll('.view-panel').forEach(panel => {
-            panel.classList.remove('active');
-        });
-        document.getElementById('mainProfileView').classList.add('active'); // 🌟 टाइपो एरर फिक्स की गई (classList जोड़ा गया)
-    }
-
     // मास्टर फ़ायरबेस डेटा सिंक मैनेजर
     function loadProfileData(user) {
         if(!user) return;
