@@ -7,12 +7,10 @@
     .header-icons { display: flex; align-items: center; gap: 10px; }
     .crown-icon { color: #ffcc00; font-size: 24px; cursor: pointer; }
     .gift-box { background: linear-gradient(90deg, #ff2a5f, #ff7e00); color: #fff; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 12px; }
-    
     .sub-tabs { display: flex; gap: 22px; padding: 10px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .sub-tabs::-webkit-scrollbar { display: none; }
     .sub-tab { color: #8e8e93; font-size: 16px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: color 0.2s; }
     .sub-tab.active { color: #fff; border-bottom: 3px solid #ff2a5f; padding-bottom: 4px; }
-    
     .drama-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px 0; width: 100%; }
 </style>
 
@@ -33,52 +31,6 @@
     </div>
 
     <div class="drama-grid" id="homeDramasContainer">
-        <!-- यहाँ फ़ायरबेस से लाइव ड्रामा लोड होगा -->
+        <p style="grid-column: span 3; text-align:center; color:#8e8e93; padding:40px;">Loading dramas...</p>
     </div>
 </div>
-
-<script>
-    function loadHomeDramas(catName = 'Popular') {
-        const container = document.getElementById('homeDramasContainer');
-        if(!container) return;
-        container.innerHTML = '<p style="grid-column: span 3; text-align:center; color:#8e8e93; padding:40px;">Loading dramas...</p>';
-        
-        db.collection("stories").where("category", "==", catName).get()
-        .then((snapshot) => {
-            container.innerHTML = '';
-            if(snapshot.empty) {
-                container.innerHTML = '<p style="grid-column: span 3; text-align:center; color:#8e8e93; padding:40px;">No series found.</p>';
-                return;
-            }
-            let i = 0;
-            const dummy_cats = ["Forbidden Love", "Revenge", "Hidden Identity", "Contract Lover", "Steamy", "Mafia"];
-            snapshot.forEach((doc) => {
-                const story = doc.data();
-                const dCat = story.genre || dummy_cats[i % dummy_cats.length];
-                const dTag = (i % 2 === 0) ? "Hot" : "New";
-                i++;
-                
-                container.innerHTML += `
-                    <a href="view_story.html?id=${doc.id}" class="drama-card" onclick="saveToHistory('${story.title.replace(/'/g, "\\'")}', '${story.thumbnail_url}', '${dCat}')">
-                        <div class="thumb-box">
-                            <span class="hot-tag">${dTag}</span>
-                            <img class="thumb-img" src="${story.thumbnail_url}">
-                            <span class="views-counter">▶ 61.2M</span>
-                        </div>
-                        <div class="drama-info">
-                            <div class="drama-name">${story.title}</div>
-                            <div class="drama-cat">${dCat}</div>
-                        </div>
-                    </a>`;
-            });
-        }).catch(err => {
-            container.innerHTML = '<p style="grid-column: span 3; text-align:center; color:#ff2a5f; padding:40px;">Error loading data.</p>';
-        });
-    }
-
-    function filterCategory(catName, element) {
-        document.querySelectorAll('.sub-tab').forEach(el => el.classList.remove('active'));
-        element.classList.add('active');
-        loadHomeDramas(catName);
-    }
-</script>

@@ -1,35 +1,13 @@
-<div class="reels-container" id="reelsContainer">
-    <!-- रील्स शॉर्ट्स लोड होंगे -->
-</div>
+<!-- foryou.html -->
+<style>
+    .reels-container { width: 100%; height: calc(100vh - 65px); overflow-y: scroll; scroll-snap-type: y mandatory; background: #000; }
+    .reel-video-box { width: 100%; height: 100%; scroll-snap-align: start; position: relative; background: #000; overflow: hidden; }
+    .reel-video-box video { width: 100%; height: 100%; object-fit: cover; }
+    .reel-info-layer { position: absolute; bottom: 20px; left: 16px; right: 80px; z-index: 10; pointer-events: none; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+    .reel-info-layer h3 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .reel-info-layer p { font-size: 13px; color: #e5e5ea; line-height: 1.4; }
+</style>
 
-<script>
-    function loadReelsData() {
-        const container = document.getElementById('reelsContainer');
-        if(!container) return;
-        
-        db.collection("chapters").where("is_premium", "==", false).limit(5).get()
-        .then((snapshot) => {
-            container.innerHTML = '';
-            if(snapshot.empty) {
-                container.innerHTML = '<div style="text-align:center; padding-top:120px; color:var(--sub); font-size:14px;">📱 Vertical swipe clips loaded successfully.</div>';[span_12](start_span)[span_12](end_span)
-                return;
-            }
-            snapshot.forEach((doc) => {
-                const reel = doc.data();
-                let rawVideo = reel.video_url.replace('?dl=0', '?raw=1').replace('&dl=0', '&raw=1');[span_13](start_span)[span_13](end_span)
-                container.innerHTML += `
-                    <div class="reel-video-box">[span_14](start_span)[span_14](end_span)
-                        <video class="reel-player" src="${rawVideo}" loop playsinline></video>[span_15](start_span)[span_15](end_span)
-                        <div class="reel-info-layer">[span_16](start_span)[span_16](end_span)
-                            <h3>@${reel.story_title || 'DramaBox'}</h3>[span_17](start_span)[span_17](end_span)
-                            <p>Ep ${reel.chapter_number} - ${reel.title}</p>[span_18](start_span)[span_18](end_span)
-                        </div>
-                    </div>`;
-            });
-            
-            // पहले वीडियो को ऑटो-प्ले करें
-            const firstVideo = document.querySelector('.reel-player');
-            if(firstVideo) firstVideo.play();
-        });
-    }
-</script>
+<div class="reels-container" id="reelsContainer">
+    <p style="text-align:center; padding-top:120px; color:var(--sub); font-size:14px;">Loading reels...</p>
+</div>

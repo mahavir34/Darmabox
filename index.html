@@ -57,7 +57,6 @@
 </div>
 
 <script>
-    // 🌟 असली फ़ायरबेस क्रेडेंशियल्स चाबियाँ डायरेक्ट कॉन्फ़िगरेशन
     const firebaseConfig = {
       apiKey: "AIzaSyAj1gkyf8DIdW0zbtflo44R395MSr3ccEQ",
       authDomain: "local-host-f2778.firebaseapp.com",
@@ -75,7 +74,6 @@
     let currentUser = null;
     let isAppInitialized = false;
 
-    // 🔒 ऑथेंटिकेशन चेक गार्ड और ऑटो-रेंडरिंग फिक्स
     firebase.auth().onAuthStateChanged((user) => {
         if (user) {
             currentUser = user;
@@ -97,12 +95,7 @@
             fetch('profile.html').then(r => r.text()).then(t => document.getElementById('profile').innerHTML = t)
         ]).then(() => {
             setupNavListeners();
-            // 🎬 फ़ाइलें लोड होते ही होम पेज का लाइव डेटा फ़ेच करने के लिए 300ms का छोटा सा डिले (ताकि HTML एलिमेंट्स रेडी हो जाएं)
-            setTimeout(() => {
-                if(typeof loadHomeDramas === 'function') { 
-                    loadHomeDramas('Popular'); 
-                }
-            }, 300);
+            loadHomeDramas('Popular'); 
         }).catch(err => {
             isAppInitialized = false;
         });
@@ -137,11 +130,86 @@
         if(pageId !== 'foryou') { 
             document.querySelectorAll('.reel-player').forEach(v => v.pause());
         } else {
-            if(typeof loadReelsData === 'function') loadReelsData();
+            loadReelsData();
         }
-        if(pageId === 'home' && typeof loadHomeDramas === 'function') { loadHomeDramas('Popular'); }
+        if(pageId === 'home') { loadHomeDramas('Popular'); }
         if(pageId === 'profile' && typeof loadProfileData === 'function') { loadProfileData(currentUser); }
         if(pageId === 'mylist' && typeof displayHistory === 'function') { displayHistory(); }
+    }
+
+    // 🌟 होम ड्रामा लोडिंग मास्टर फ़ंक्शन
+    function loadHomeDramas(catName = 'Popular') {
+        const container = document.getElementById('homeDramasContainer');
+        if(!container) return;
+        
+        db.collection("stories").where("category", "==", catName).get()
+        .then((snapshot) => {
+            container.innerHTML = '';
+            if(snapshot.empty) {
+                container.innerHTML = '<p style="grid-column: span 3; text-align:center; color:#8e8e93; padding:40px;">No series found.</p>';
+                return;
+            }
+            let i = 0;
+            const dummy_cats = ["Forbidden Love", "Revenge", "Hidden Identity", "Contract Lover", "Steamy", "Mafia"];
+            snapshot.forEach((doc) => {
+                const story = doc.data();
+                const dCat = story.genre || dummy_cats[i % dummy_cats.length];
+                const dTag = (i % 2 === 0) ? "Hot" : "New";
+                i++;
+                
+                container.innerHTML += `
+                    <a href="view_story.html?id=${doc.id}" class="drama-card" onclick="saveToHistory('${story.title.replace(/'/g, "\\'")}', '${story.thumbnail_url}', '${dCat}')">
+                        <div class="thumb-box">
+                            <span class="hot-tag">${dTag}</span>
+                            <img class="thumb-img" src="${story.thumbnail_url}">
+                            <span class="views-counter">▶ 61.2M</span>
+                        </div>
+                        <div class="drama-info">
+                            <div class="drama-name">${story.title}</div>
+                            <div class="drama-cat">${dCat}</div>
+                        </div>
+                    </a>`;
+            });
+        }).catch(err => {
+            container.innerHTML = '<p style="grid-column: span 3; text-align:center; color:#ff2a5f; padding:40px;">Error loading data.</p>';
+        });
+    }
+
+    function filterCategory(catName, element) {
+        document.querySelectorAll('.sub-tab').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        loadHomeDramas(catName);
+    }
+
+    // 🌟 रील्स डेटा लोडिंग मास्टर फ़ंक्शन
+    function loadReelsData() {
+        const container = document.getElementById('reelsContainer');
+        if(!container) return;
+        
+        db.collection("chapters").limit(5).get()
+        .then((snapshot) => {
+            container.innerHTML = '';
+            if(snapshot.empty) {
+                container.innerHTML = '<div style="text-align:center; padding-top:120px; color:#8e8e93; font-size:14px;">📱 No reels found. Upload from admin panel!</div>';
+                return;
+            }
+            snapshot.forEach((doc) => {
+                const reel = doc.data();
+                let rawVideo = reel.video_url.replace('?dl=0', '?raw=1').replace('&dl=0', '&raw=1');
+                container.innerHTML += `
+                    <div class="reel-video-box">
+                        <video class="reel-player" src="${rawVideo}" loop playsinline></video>
+                        <div class="reel-info-layer">
+                            <h3>@${reel.story_title || 'DramaBox'}</h3>
+                            <p>Ep ${reel.chapter_number} - ${reel.title}</p>
+                        </div>
+                    </div>`;
+            });
+            const firstVideo = document.querySelector('.reel-player');
+            if(firstVideo) firstVideo.play();
+        }).catch(err => {
+            container.innerHTML = '<p style="text-align:center; color:#ff2a5f; padding-top:40px;">Error loading reels.</p>';
+        });
     }
 
     function saveToHistory(title, thumb, cat) {
