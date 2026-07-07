@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DramaBox Player</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --bg: #000000; --card: #111111; --primary: #ff2a5f; --text: #ffffff; --sub: #8a8a8f; --border: #1c1c1e; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: sans-serif; background-color: var(--bg); color: var(--text); padding-bottom: 40px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 500px; margin: 0 auto; }
+        .top-nav { display: flex; padding: 10px 16px; align-items: center; background: #000000; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; gap: 12px; }
+        .back-btn { color: #fff; text-decoration: none; display: flex; align-items: center; background: none; border: none; cursor: pointer; }
+        .back-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        .header-search-box { flex: 1; background: #1c1c1e; border-radius: 20px; padding: 8px 14px; display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--sub); }
+        .header-search-box input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 13px; }
+        
+        .player-box { width: 100%; background: #000; position: relative; aspect-ratio: 9/16; max-height: 70vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .player-box video { width: 100%; height: 100%; object-fit: cover; }
+        .play-center-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        
+        .lock-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        .lock-btn { background: var(--primary); color: #fff; padding: 12px 30px; border-radius: 25px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; }
+
+        .info-box { padding: 15px; }
+        .drama-title { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+        .ep-title { font-size: 14px; color: var(--primary); margin-bottom: 10px; font-weight: bold; }
+        .ep-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 0 15px; margin-bottom: 25px; }
+        .ep-btn { background: var(--card); border: 1px solid var(--border); color: #fff; padding: 12px 0; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px; cursor: pointer; }
+        .ep-btn.active { background: var(--primary); border-color: var(--primary); }
+    </style>
+</head>
+<body>
+<div class="container">
+    
+    <div class="top-nav">
+        <button class="back-btn" onclick="window.location.href='index.html'"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+        <div class="header-search-box">🔍 <input type="text" id="headerTitle" readonly></div>
+    </div>
+
+    <div class="player-box">
+        <video id="storyPlayer" playsinline></video>
+        <button id="playBtn" class="play-center-btn" style="display: none;">▶</button>
+        
+        <div class="lock-overlay" id="lockOverlay" style="display: none;">
+            <h2 style="color:#ffcc00; font-size:45px;">🪙</h2>
+            <h3 style="margin-top:10px;">This Episode is Locked</h3>
+            <p id="lockCoinsTxt" style="color:var(--sub); font-size:13px; margin-top:5px;"></p>
+            <button class="lock-btn" onclick="unlockEpisodeWithCoins()">Unlock Episode</button>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h1 class="drama-title" id="dramaTitle">Loading...</h1>
+        <p class="ep-title" id="nowPlayingTxt"></p>
+        <p style="color:var(--sub); font-size:14px; line-height:1.4;" id="dramaDesc"></p>
+    </div>
+
+    <h3 style="font-size: 16px; font-weight: bold; padding: 15px 15px 10px 15px;">All Episodes</h3>
+    <div class="ep-grid" id="episodesGrid"></div>
+
+</div>
+
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAj1gkyf8DIdW0zbtflo44R395MSr3ccEQ",
+      authDomain: "local-host-f2778.firebaseapp.com",
+      databaseURL: "https://local-host-f2778-default-rtdb.firebaseio.com",
+      projectId: "local-host-f2778",
+      storageBucket: "local-host-f2778.firebasestorage.app",
+      messagingSenderId: "1047439436453",
+      appId: "1:1047439436453:web:30e8176df0d0f5a7673b4c",
+      measurementId: "G-23H4J7C5T5"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const storyId = urlParams.get('id');
+    let currentEpNum = parseInt(urlParams.get('ep')) || 1;
+    
+    let currentUser = null;
+    let selectedChapterData = null;
+
+    firebase.auth().onAuthStateChanged(user => {
+        if(user) { currentUser = user; loadDramaDetails(); }
+        else { window.location.href = "auth.html"; }
+    });
+
+    function loadDramaDetails() {
+        db.collection("stories").doc(storyId).get().then(doc => {
+            if(doc.exists) {
+                const story = doc.data();
+                document.getElementById('headerTitle').value = story.title;
+                document.getElementById('dramaTitle').innerText = story.title;
+                document.getElementById('dramaDesc').innerText = story.description;
+                loadEpisodesGrid();
+            }
+        });
+    }
+
+    function loadEpisodesGrid() {
+        db.collection("chapters").where("story_id", "==", storyId).orderBy("chapter_number", "asc").get()
+        .then(snapshot => {
+            const grid = document.getElementById('episodesGrid');
+            grid.innerHTML = '';
+            snapshot.forEach(doc => {
+                const ep = doc.data();
+                let activeClass = (ep.chapter_number === currentEpNum) ? 'active' : '';
+                let lockIcon = ep.is_premium ? ' 🪙' : '';
+                
+                grid.innerHTML += `<button class="ep-btn ${activeClass}" onclick="playEpisode(${ep.chapter_number})">${ep.chapter_number}${lockIcon}</button>`;
+                
+                if(ep.chapter_number === currentEpNum) { selectedChapterData = ep; }
+            });
+            checkEpisodeLock();
+        });
+    }
+
+    function checkEpisodeLock() {
+        if(!selectedChapterData) return;
+        document.getElementById('nowPlayingTxt').innerText = `Now Playing: Episode ${selectedChapterData.chapter_number} - ${selectedChapterData.title}`;
+        
+        if(selectedChapterData.is_premium) {
+            document.getElementById('lockCoinsTxt').innerText = `Requires ${selectedChapterData.required_coins} Coins to watch.`;
+            document.getElementById('lockOverlay').style.display = 'flex';
+            document.getElementById('storyPlayer').src = '';
+            document.getElementById('playBtn').style.display = 'none';
+        } else {
+            document.getElementById('lockOverlay').style.display = 'none';
+            let playUrl = selectedChapterData.video_url.replace('?dl=0', '?raw=1').replace('&dl=0', '&raw=1');
+            document.getElementById('storyPlayer').src = playUrl;
+            document.getElementById('playBtn').style.display = 'block';
+        }
+    }
+
+    function unlockEpisodeWithCoins() {
+        const userRef = db.collection("users").doc(currentUser.uid);
+        db.runTransaction((transaction) => {
+            return transaction.get(userRef).then((userDoc) => {
+                if (!userDoc.exists) { throw "User doc does not exist!"; }
+                let newCoins = userDoc.data().coins - selectedChapterData.required_coins;
+                if (newCoins < 0) { throw "❌ अपर्याप्त सिक्के! कृपया टॉप-अप करें।"; }
+                transaction.update(userRef, { coins: newCoins });
+                return newCoins;
+            });
+        }).then(() => {
+            alert("Episode Unlocked Successfully! 🎉");
+            selectedChapterData.is_premium = false; 
+            checkEpisodeLock();
+        }).catch((err) => { alert(err); });
+    }
+
+    function playEpisode(num) { window.location.href = `view_story.html?id=${storyId}&ep=${num}`; }
+
+    const video = document.getElementById('storyPlayer');
+    const playBtn = document.getElementById('playBtn');
+    if(playBtn && video) {
+        playBtn.addEventListener('click', function() {
+            if(video.paused) { video.muted = false; video.play(); playBtn.innerHTML = "⏸️"; playBtn.style.opacity = "0"; }
+            else { video.pause(); playBtn.innerHTML = "▶"; playBtn.style.opacity = "1"; }
+        });
+        video.addEventListener('click', () => playBtn.click());
+    }
+</script>
+</body>
+</html>
