@@ -1,0 +1,59 @@
+<div class="app-header">
+    <div class="search-row">
+        <div class="search-box">🔍 <input type="text" placeholder="Don't Mess With The Billionaire..."></div>
+        <div class="header-icons"><span class="crown-icon" onclick="switchTab('member')">👑</span><div class="gift-box">+60</div></div>
+    </div>
+    <!-- 🌟 लाइव रिस्पॉन्सिव सब-टैब्स जो फिल्टर्स का काम करेंगे -->
+    <div class="sub-tabs">
+        <span class="sub-tab active" onclick="filterCategory('Popular', this)">Popular</span>
+        <span class="sub-tab" onclick="filterCategory('New', this)">New</span>
+        <span class="sub-tab" onclick="filterCategory('Rankings', this)">Rankings</span>
+        <span class="sub-tab" onclick="filterCategory('Categories', this)">Categories</span>
+    </div>
+</div>
+<div class="drama-grid" id="homeDramasContainer">
+    <!-- फ़ायरबेस से डायनामिक पोस्टर ग्रिड लोड होगा -->
+</div>
+
+<script>
+    function loadHomeDramas(catName = 'Popular') {
+        const container = document.getElementById('homeDramasContainer');
+        if(!container) return;
+        
+        db.collection("stories").where("category", "==", catName).orderBy("created_at", "desc").get()
+        .then((snapshot) => {
+            container.innerHTML = '';
+            if(snapshot.empty) {
+                container.innerHTML = '<p style="grid-column: span 3; text-align:center; color:var(--sub); padding:40px;">No series found in this category.</p>';
+                return;
+            }
+            let i = 0;
+            const dummy_cats = ["Forbidden Love", "Revenge", "Hidden Identity", "Contract Lover"];[span_4](start_span)[span_4](end_span)
+            snapshot.forEach((doc) => {
+                const story = doc.data();
+                const dCat = dummy_cats[i % dummy_cats.length];[span_5](start_span)[span_5](end_span)
+                const dTag = (i % 2 === 0) ? "Hot" : "New";[span_6](start_span)[span_6](end_span)
+                i++;
+                
+                container.innerHTML += `
+                    <a href="view_story.html?id=${doc.id}" class="drama-card" onclick="saveToHistory('${story.title.replace(/'/g, "\\'")}', '${story.thumbnail_url}', '${dCat}')">
+                        <div class="thumb-box">
+                            <span class="hot-tag">${dTag}</span>[span_7](start_span)[span_7](end_span)
+                            <img class="thumb-img" src="${story.thumbnail_url}">[span_8](start_span)[span_8](end_span)
+                            <span class="views-counter">▶ 63.2M</span>[span_9](start_span)[span_9](end_span)
+                        </div>
+                        <div class="drama-info">
+                            <div class="drama-name">${story.title}</div>[span_10](start_span)[span_10](end_span)
+                            <div class="drama-cat">${dCat}</div>[span_11](start_span)[span_11](end_span)
+                        </div>
+                    </a>`;
+            });
+        });
+    }
+
+    function filterCategory(catName, element) {
+        document.querySelectorAll('.sub-tab').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        loadHomeDramas(catName);
+    }
+</script>

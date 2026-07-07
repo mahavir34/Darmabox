@@ -1,0 +1,16 @@
+<style>
+    .list-container-box { width: 100%; padding: 0 16px; overflow-x: hidden; }
+    .list-nav-header { display: flex; align-items: center; gap: 15px; padding: 15px 0; background: #000; border-bottom: 1px solid #1c1c1e; }
+</style>
+
+<div class="list-container-box">
+    <div class="list-nav-header">
+        <button class="back-arrow-btn" onclick="switchTab('home')">
+            <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </button>
+        <h2 style="font-size:20px; font-weight:800;">My List</h2>
+    </div>
+    
+    <div class="sub-tabs" style="margin-top:10px;"><span class="sub-tab active">History</span></div>
+    <div class="drama-grid" id="historyContainer" style="padding: 15px 0;"></div>
+</div>

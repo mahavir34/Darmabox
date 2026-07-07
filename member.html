@@ -1,0 +1,26 @@
+<style>
+    .member-container-box { width: 100%; padding: 0 16px; overflow-x: hidden; }
+    .member-nav-header { display: flex; align-items: center; gap: 15px; padding: 15px 0; background: #000; border-bottom: 1px solid #1c1c1e; }
+    .back-arrow-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; }
+    .back-arrow-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .wallet-card-grid { background: #121214; padding: 16px; border-radius: 12px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #1c1c1e; width: 100%; box-sizing: border-box; }
+</style>
+
+<div class="member-container-box">
+    <div class="member-nav-header">
+        <button class="back-arrow-btn" onclick="switchTab('home')">
+            <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </button>
+        <h2 style="font-size:20px; font-weight:800;">Join Membership</h2>
+    </div>
+
+    <div class="wallet-card-grid">
+        <div><h3 style="font-size:15px; color:#fff;">Weekly Membership</h3><p style="color:var(--sub); font-size:12px; margin-top:4px;">Stream all videos for 7 days</p></div>
+        <span style="font-weight:800; color:var(--primary); font-size:15px; white-space: nowrap;">₹590.00 /wk</span>
+    </div>
+    
+    <div class="wallet-card-grid">
+        <div><h3 style="font-size:15px; color:#fff;">Annual Membership</h3><p style="color:var(--sub); font-size:12px; margin-top:4px;">Super saver value pack</p></div>
+        <span style="font-weight:800; font-size:15px; color:#fff; white-space: nowrap;">₹5,100.00 /yr</span>
+    </div>
+</div>
