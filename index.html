@@ -7,22 +7,14 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config.js"></script> 
     <style>
         :root { --bg: #000000; --card: #1c1c1e; --primary: #ff2a5f; --text: #ffffff; --sub: #8e8e93; --border: #1c1c1e; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
-        /* 📱 मोबाइल स्क्रीन फिटिंग फिक्स (Viewport constraints) */
         html, body { background-color: var(--bg); color: var(--text); font-family: sans-serif; width: 100%; overflow-x: hidden; position: relative; }
-        
         .container { width: 100%; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; background: #000; padding-bottom: 70px; }
-        
         .page { display: none; width: 100%; animation: fadeIn 0.2s ease-in-out; }
         .page.active { display: block; }
-        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* 🎛️ 100% वर्किंग बॉटम बार */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #000000; height: 65px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #121214; z-index: 1000; max-width: 500px; margin: 0 auto; padding-bottom: 4px; }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8e8e93; text-decoration: none; font-size: 11px; font-weight: 500; background: transparent; border: none; gap: 4px; cursor: pointer; flex: 1; height: 100%; outline: none; }
         .nav-item.active { color: #ff2a5f; }
@@ -65,10 +57,25 @@
 </div>
 
 <script>
+    // 🌟 असली फ़ायरबेस क्रेडेंशियल्स चाबियाँ डायरेक्ट कॉन्फ़िगरेशन
+    const firebaseConfig = {
+      apiKey: "AIzaSyAj1gkyf8DIdW0zbtflo44R395MSr3ccEQ",
+      authDomain: "local-host-f2778.firebaseapp.com",
+      databaseURL: "https://local-host-f2778-default-rtdb.firebaseio.com",
+      projectId: "local-host-f2778",
+      storageBucket: "local-host-f2778.firebasestorage.app",
+      messagingSenderId: "1047439436453",
+      appId: "1:1047439436453:web:30e8176df0d0f5a7673b4c",
+      measurementId: "G-23H4J7C5T5"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     let currentUser = null;
     let isAppInitialized = false;
 
-    // 🔒 ऑथेंटिकेशन लूप फिक्स गार्ड
+    // 🔒 ऑथेंटिकेशन चेक गार्ड और ऑटो-रेंडरिंग फिक्स
     firebase.auth().onAuthStateChanged((user) => {
         if (user) {
             currentUser = user;
@@ -89,8 +96,13 @@
             fetch('mylist.html').then(r => r.text()).then(t => document.getElementById('mylist').innerHTML = t),
             fetch('profile.html').then(r => r.text()).then(t => document.getElementById('profile').innerHTML = t)
         ]).then(() => {
-            if(typeof loadHomeDramas === 'function') { loadHomeDramas('Popular'); }
             setupNavListeners();
+            // 🎬 फ़ाइलें लोड होते ही होम पेज का लाइव डेटा फ़ेच करने के लिए 300ms का छोटा सा डिले (ताकि HTML एलिमेंट्स रेडी हो जाएं)
+            setTimeout(() => {
+                if(typeof loadHomeDramas === 'function') { 
+                    loadHomeDramas('Popular'); 
+                }
+            }, 300);
         }).catch(err => {
             isAppInitialized = false;
         });
@@ -130,6 +142,14 @@
         if(pageId === 'home' && typeof loadHomeDramas === 'function') { loadHomeDramas('Popular'); }
         if(pageId === 'profile' && typeof loadProfileData === 'function') { loadProfileData(currentUser); }
         if(pageId === 'mylist' && typeof displayHistory === 'function') { displayHistory(); }
+    }
+
+    function saveToHistory(title, thumb, cat) {
+        let history = JSON.parse(localStorage.getItem('user_history')) || [];
+        if (!history.some(item => item.title === title)) {
+            history.push({ title: title, thumb: thumb, cat: cat });
+            localStorage.setItem('user_history', JSON.stringify(history));
+        }
     }
 </script>
 </body>
