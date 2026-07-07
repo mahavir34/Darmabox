@@ -1,53 +1,78 @@
-<div class="app-header">
+<!-- home.html -->
+<style>
+    .home-container { width: 100%; padding: 0 12px; box-sizing: border-box; }
+    .search-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 0 10px 0; }
+    .search-box { background: #1c1c1e; border-radius: 20px; padding: 10px 14px; flex: 1; display: flex; align-items: center; gap: 8px; color: #8e8e93; font-size: 14px; }
+    .search-box input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 13px; }
+    .header-icons { display: flex; align-items: center; gap: 10px; }
+    .crown-icon { color: #ffcc00; font-size: 24px; cursor: pointer; }
+    .gift-box { background: linear-gradient(90deg, #ff2a5f, #ff7e00); color: #fff; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 12px; }
+    
+    .sub-tabs { display: flex; gap: 22px; padding: 10px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .sub-tabs::-webkit-scrollbar { display: none; }
+    .sub-tab { color: #8e8e93; font-size: 16px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: color 0.2s; }
+    .sub-tab.active { color: #fff; border-bottom: 3px solid #ff2a5f; padding-bottom: 4px; }
+    
+    .drama-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px 0; width: 100%; }
+</style>
+
+<div class="home-container">
     <div class="search-row">
-        <div class="search-box">🔍 <input type="text" placeholder="Don't Mess With The Billionaire..."></div>
-        <div class="header-icons"><span class="crown-icon" onclick="switchTab('member')">👑</span><div class="gift-box">+60</div></div>
+        <div class="search-box">🔍 <input type="text" placeholder="Step Back! I'm the Hidden..."></div>
+        <div class="header-icons">
+            <span class="crown-icon" onclick="switchTab('member')">👑</span>
+            <div class="gift-box">+20</div>
+        </div>
     </div>
-    <!-- 🌟 लाइव रिस्पॉन्सिव सब-टैब्स जो फिल्टर्स का काम करेंगे -->
+    
     <div class="sub-tabs">
         <span class="sub-tab active" onclick="filterCategory('Popular', this)">Popular</span>
         <span class="sub-tab" onclick="filterCategory('New', this)">New</span>
         <span class="sub-tab" onclick="filterCategory('Rankings', this)">Rankings</span>
         <span class="sub-tab" onclick="filterCategory('Categories', this)">Categories</span>
     </div>
-</div>
-<div class="drama-grid" id="homeDramasContainer">
-    <!-- फ़ायरबेस से डायनामिक पोस्टर ग्रिड लोड होगा -->
+
+    <div class="drama-grid" id="homeDramasContainer">
+        <!-- यहाँ फ़ायरबेस से लाइव ड्रामा लोड होगा -->
+    </div>
 </div>
 
 <script>
     function loadHomeDramas(catName = 'Popular') {
         const container = document.getElementById('homeDramasContainer');
         if(!container) return;
+        container.innerHTML = '<p style="grid-column: span 3; text-align:center; color:#8e8e93; padding:40px;">Loading dramas...</p>';
         
-        db.collection("stories").where("category", "==", catName).orderBy("created_at", "desc").get()
+        db.collection("stories").where("category", "==", catName).get()
         .then((snapshot) => {
             container.innerHTML = '';
             if(snapshot.empty) {
-                container.innerHTML = '<p style="grid-column: span 3; text-align:center; color:var(--sub); padding:40px;">No series found in this category.</p>';
+                container.innerHTML = '<p style="grid-column: span 3; text-align:center; color:#8e8e93; padding:40px;">No series found.</p>';
                 return;
             }
             let i = 0;
-            const dummy_cats = ["Forbidden Love", "Revenge", "Hidden Identity", "Contract Lover"];[span_4](start_span)[span_4](end_span)
+            const dummy_cats = ["Forbidden Love", "Revenge", "Hidden Identity", "Contract Lover", "Steamy", "Mafia"];
             snapshot.forEach((doc) => {
                 const story = doc.data();
-                const dCat = dummy_cats[i % dummy_cats.length];[span_5](start_span)[span_5](end_span)
-                const dTag = (i % 2 === 0) ? "Hot" : "New";[span_6](start_span)[span_6](end_span)
+                const dCat = story.genre || dummy_cats[i % dummy_cats.length];
+                const dTag = (i % 2 === 0) ? "Hot" : "New";
                 i++;
                 
                 container.innerHTML += `
                     <a href="view_story.html?id=${doc.id}" class="drama-card" onclick="saveToHistory('${story.title.replace(/'/g, "\\'")}', '${story.thumbnail_url}', '${dCat}')">
                         <div class="thumb-box">
-                            <span class="hot-tag">${dTag}</span>[span_7](start_span)[span_7](end_span)
-                            <img class="thumb-img" src="${story.thumbnail_url}">[span_8](start_span)[span_8](end_span)
-                            <span class="views-counter">▶ 63.2M</span>[span_9](start_span)[span_9](end_span)
+                            <span class="hot-tag">${dTag}</span>
+                            <img class="thumb-img" src="${story.thumbnail_url}">
+                            <span class="views-counter">▶ 61.2M</span>
                         </div>
                         <div class="drama-info">
-                            <div class="drama-name">${story.title}</div>[span_10](start_span)[span_10](end_span)
-                            <div class="drama-cat">${dCat}</div>[span_11](start_span)[span_11](end_span)
+                            <div class="drama-name">${story.title}</div>
+                            <div class="drama-cat">${dCat}</div>
                         </div>
                     </a>`;
             });
+        }).catch(err => {
+            container.innerHTML = '<p style="grid-column: span 3; text-align:center; color:#ff2a5f; padding:40px;">Error loading data.</p>';
         });
     }
 

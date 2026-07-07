@@ -1,0 +1,80 @@
+<!-- profile.html -->
+<style>
+    .profile-container { width: 100%; padding: 0 16px; box-sizing: border-box; }
+    .profile-user-card { display: flex; align-items: center; gap: 14px; padding: 24px 0 16px 0; }
+    .avatar-circle { width: 54px; height: 54px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; color: #fff; }
+    
+    .join-member-banner { background: linear-gradient(90deg, #ff2a5f, #ff7e00); padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
+    .banner-left h3 { font-size: 16px; font-weight: bold; color: #fff; }
+    .banner-left p { color: rgba(255,255,255,0.8); font-size: 11px; margin-top: 4px; }
+    .join-btn { background: #fff; color: #000; border: none; border-radius: 18px; padding: 6px 18px; font-weight: bold; font-size: 13px; cursor: pointer; }
+    
+    .menu-list { display: flex; flex-direction: column; width: 100%; }
+    .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid #1c1c1e; color: #fff; font-size: 15px; font-weight: 500; cursor: pointer; }
+    .menu-left { display: flex; align-items: center; gap: 12px; }
+    .menu-left span { font-size: 18px; }
+    .arrow-right { color: #444; font-size: 14px; }
+</style>
+
+<div class="profile-container">
+    <div class="profile-user-card">
+        <div class="avatar-circle">👤</div>
+        <div>
+            <h2 style="font-size:18px; font-weight:800; color:#fff;" id="profEmail">User ></h2>
+            <p style="color:#8e8e93; font-size:12px; margin-top:2px;" id="profId">ID: Loading... | Following 0</p>
+        </div>
+    </div>
+
+    <div class="join-member-banner">
+        <div class="banner-left">
+            <h3>Join Membership</h3>
+            <p>Enjoy these exclusive benefits: 16K+ series | 1080p quality</p>
+        </div>
+        <button class="join-btn" onclick="switchTab('member')">Join</button>
+    </div>
+
+    <div class="menu-list">
+        <div class="menu-item" onclick="switchTab('member')">
+            <div class="menu-left"><span>📈</span>Top Up</div>
+            <div class="arrow-right">❯</div>
+        </div>
+        <div class="menu-item">
+            <div class="menu-left"><span>🪙</span>My Wallet</div>
+            <span style="color:#ffcc00; font-weight:bold; font-size:15px;" id="profCoins">🪙 0 ❯</span>
+        </div>
+        <div class="menu-item">
+            <div class="menu-left"><span>🎁</span>Earn Rewards</div>
+            <span style="background:#ff2a5f; color:#fff; font-size:11px; padding:2px 8px; border-radius:10px; font-weight:bold;">+20 ❯</span>
+        </div>
+        <div class="menu-item" onclick="switchTab('mylist')">
+            <div class="menu-left"><span>⏰</span>History</div>
+            <div class="arrow-right">❯</div>
+        </div>
+        <div class="menu-item" onclick="handleLogout()" style="border-bottom: none;">
+            <div class="menu-left" style="color:#ff2a5f;"><span>🚪</span>Log Out Account</div>
+            <div class="arrow-right">❯</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function loadProfileData(user) {
+        if(!user) return;
+        document.getElementById('profEmail').innerText = user.email.split('@')[0] + " >";
+        document.getElementById('profId').innerText = "ID: " + user.uid.substring(0, 9).toUpperCase() + " | Following 0";
+        
+        db.collection("users").doc(user.uid).get().then(doc => {
+            if(doc.exists) {
+                document.getElementById('profCoins').innerText = "🪙 " + (doc.data().coins ?? 0) + " ❯";
+            }
+        }).catch(err => {
+            console.log("Profile data error");
+        });
+    }
+
+    function handleLogout() {
+        firebase.auth().signOut().then(() => { 
+            window.location.href = "auth.html"; 
+        });
+    }
+</script>
