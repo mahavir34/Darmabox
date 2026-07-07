@@ -3,12 +3,15 @@
     .view-panel { display: none; width: 100%; padding: 0 16px; box-sizing: border-box; }
     .view-panel.active { display: block; }
 
-    /* 👤 मुख्य प्रोफ़ाइल लुक */
+    /* 👤 प्रीमियम यूज़र हेडर कार्ड */
     .profile-user-card { display: flex; align-items: center; gap: 14px; padding: 24px 0 16px 0; }
-    .avatar-circle { width: 56px; height: 56px; background: #222226; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; border: 1px solid #2c2c2e; }
-    .join-member-banner { background: linear-gradient(90deg, #ff2a5f, #ff7e00); padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
-    .join-btn { background: #fff; color: #000; border: none; border-radius: 18px; padding: 7px 20px; font-weight: bold; font-size: 13px; cursor: pointer; }
+    .avatar-circle { width: 56px; height: 56px; background: #1c1c1e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; border: 1px solid #2c2c2e; }
     
+    /* 👑 मेंबरशिप बैनर */
+    .join-member-banner { background: linear-gradient(90deg, #ff2a5f, #ff7e00); padding: 16px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
+    .join-btn { background: #fff; color: #000; border: none; border-radius: 20px; padding: 7px 22px; font-weight: bold; font-size: 13px; cursor: pointer; }
+    
+    /* 🎛️ ड्रामाबॉक्स राउंडेड बॉक्स लिस्ट */
     .menu-list { display: flex; flex-direction: column; width: 100%; background: #121214; border-radius: 14px; padding: 4px 16px; border: 1px solid #1c1c1e; margin-bottom: 16px; box-sizing: border-box; }
     .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #1c1c1e; font-size: 15px; font-weight: 600; cursor: pointer; }
     .menu-item:last-child { border-bottom: none; }
@@ -17,25 +20,25 @@
     .menu-right { display: flex; align-items: center; gap: 8px; color: #8e8e93; font-size: 14px; }
     .arrow-right { color: #3a3a3c; font-size: 14px; }
 
-    /* ⬅️ सब-पेज हेडर */
+    /* ⬅️ सब-पेज नेविगेशन हेडर */
     .sub-header { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid #1c1c1e; margin-bottom: 16px; }
     .back-sub-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; display: flex; align-items: center; }
     .back-sub-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* 🪙 वॉलेट और टॉप-अप ग्रिड */
+    /* 🪙 वॉलेट कार्ड बॉक्स */
     .wallet-header-box { background: linear-gradient(135deg, #1c1c1e, #0a0a0c); padding: 20px; border-radius: 14px; border: 1px solid #2c2c2e; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center; }
     .sub-tab-bar { display: flex; justify-content: space-around; border-bottom: 1px solid #1c1c1e; margin-bottom: 16px; }
     .sub-tab-item { color: #8e8e93; font-size: 14px; font-weight: bold; padding-bottom: 8px; cursor: pointer; }
     .sub-tab-item.active { color: #fff; border-bottom: 2px solid #ff2a5f; }
 
-    /* 🎁 रिवॉर्ड्स डेली चेक-इन ग्रिड */
+    /* 🎁 डेली चेक-इन ग्रिड */
     .checkin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
     .checkin-card { background: #1c1c1e; border: 1px solid #2c2c2e; border-radius: 10px; padding: 12px 4px; text-align: center; font-size: 12px; }
     .checkin-card.active { border-color: #ffcc00; background: rgba(255, 204, 0, 0.05); }
     .reward-task-btn { background: #ff2a5f; color: #fff; border: none; border-radius: 14px; padding: 6px 14px; font-size: 12px; font-weight: bold; cursor: pointer; }
     .reward-task-btn.done { background: #222; color: #555; cursor: default; }
 
-    /* ⚙️ सेटिंग्स टॉगल स्विच */
+    /* ⚙️ सेटिंग्स टॉगल स्लाइडर */
     .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #3a3a3c; transition: .3s; border-radius: 24px; }
@@ -51,7 +54,7 @@
             <div class="avatar-circle">👤</div>
             <div>
                 <h2 style="font-size:19px; font-weight:800; color:#fff;" id="profEmail">User ></h2>
-                <p style="color:#8e8e93; font-size:12px; margin-top:4px;" id="profId">ID: Loading...</p>
+                <p style="color:#8e8e93; font-size:12px; margin-top:4px;" id="profId">ID: Loading... | Following 0</p>
             </div>
         </div>
 
@@ -144,12 +147,16 @@
         <h3 style="font-size:14px; margin-bottom:12px;">Tasks list</h3>
         <div class="menu-list" style="padding:0 12px;">
             <div class="menu-item" style="padding:12px 0;">
-                <div><p style="font-size:14px;">Link WhatsApp Account</p><p style="font-size:11px; color:#8e8e93; margin-top:2px;">+30 Reward coins</p></div>
-                <button class="reward-task-btn" onclick="this.innerText='Linked'; this.classList.add('done')">Link</button>
+                <div><p style="font-size:14px;">Follow us on Facebook</p><p style="font-size:11px; color:#8e8e93; margin-top:2px;">+20 Reward coins</p></div>
+                <button class="reward-task-btn" onclick="this.innerText='Followed'; this.classList.add('done')">Follow</button>
             </div>
             <div class="menu-item" style="padding:12px 0;">
-                <div><p style="font-size:14px;">Join Telegram Channel</p><p style="font-size:11px; color:#8e8e93; margin-top:2px;">+30 Reward coins</p></div>
-                <button class="reward-task-btn" onclick="this.innerText='Joined'; this.classList.add('done')">Go</button>
+                <div><p style="font-size:14px;">Follow us on YouTube</p><p style="font-size:11px; color:#8e8e93; margin-top:2px;">+20 Reward coins</p></div>
+                <button class="reward-task-btn" onclick="this.innerText='Subscribed'; this.classList.add('done')">Follow</button>
+            </div>
+            <div class="menu-item" style="padding:12px 0;">
+                <div><p style="font-size:14px;">Follow us on TikTok</p><p style="font-size:11px; color:#8e8e93; margin-top:2px;">+20 Reward coins</p></div>
+                <button class="reward-task-btn" onclick="this.innerText='Followed'; this.classList.add('done')">Follow</button>
             </div>
         </div>
     </div>
@@ -174,7 +181,7 @@
             <div class="menu-item"><span>Appearance</span><span style="color:#8e8e93;">Dark Theme</span></div>
             <div class="menu-item" onclick="alert('Cache Cleared successfully!')"><span>Clear Cache</span><span style="color:#ff2a5f;">56.72MB 🗑️</span></div>
             <div class="menu-item">
-                <span>Download with mobile data</span>
+                <span>Download with mobile data allowed</span>
                 <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
             </div>
             <div class="menu-item"><span>About version</span><span style="color:#8e8e93;">6.2.1</span></div>
@@ -184,7 +191,7 @@
 </div>
 
 <script>
-    // मास्टर फ़ायरबेस डेटा सिंक मैनेजर
+    // फ़ायरबेस डेटा सिंक मैनेजर फ़ंक्शन
     function loadProfileData(user) {
         if(!user) return;
         
