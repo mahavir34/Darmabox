@@ -8,10 +8,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
-        :root { --bg: #000000; --card: #111111; --primary: #ff2a5f; --text: #ffffff; --sub: #8a8a8f; --border: #1c1c1e; }
+        :root { --bg: #000000; --card: #16161a; --primary: #ff2a5f; --text: #ffffff; --sub: #8a8a8f; --border: #1c1c1e; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: sans-serif; background-color: var(--bg); color: var(--text); padding-bottom: 40px; overflow-x: hidden; }
         .container { width: 100%; max-width: 500px; margin: 0 auto; }
+        
         .top-nav { display: flex; padding: 10px 16px; align-items: center; background: #000000; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; gap: 12px; }
         .back-btn { color: #fff; text-decoration: none; display: flex; align-items: center; background: none; border: none; cursor: pointer; }
         .back-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
@@ -25,12 +26,24 @@
         .lock-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         .lock-btn { background: var(--primary); color: #fff; padding: 12px 30px; border-radius: 25px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; }
 
-        .info-box { padding: 15px; }
-        .drama-title { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
-        .ep-title { font-size: 14px; color: var(--primary); margin-bottom: 10px; font-weight: bold; }
-        .ep-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 0 15px; margin-bottom: 25px; }
-        .ep-btn { background: var(--card); border: 1px solid var(--border); color: #fff; padding: 12px 0; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px; cursor: pointer; }
-        .ep-btn.active { background: var(--primary); border-color: var(--primary); }
+        /* 👑 DramaBox स्टाइल टैब बार */
+        .tabs-header { display: flex; gap: 24px; padding: 15px 16px 5px 16px; border-bottom: 1px solid var(--border); }
+        .tab-btn { color: var(--sub); font-size: 17px; font-weight: bold; background: none; border: none; cursor: pointer; padding-bottom: 8px; position: relative; }
+        .tab-btn.active { color: #fff; }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--primary); border-radius: 2px; }
+        
+        .tab-content { display: none; padding: 16px; }
+        .tab-content.active { display: block; }
+
+        /* 📱 DramaBox जैसा चौकोर बटन ग्रिड */
+        .ep-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .ep-btn { background: var(--card); border: 1px solid #222; color: #fff; padding: 14px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; }
+        .ep-btn.active { background: #222; border-color: var(--primary); color: var(--primary); }
+        
+        /* ताला (Lock) का आइकॉन स्टाइल */
+        .lock-icon-badge { position: absolute; bottom: 3px; right: 4px; font-size: 10px; opacity: 0.8; }
+        
+        .info-box p { color: var(--sub); font-size: 14px; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -46,21 +59,29 @@
         <button id="playBtn" class="play-center-btn" style="display: none;">▶</button>
         
         <div class="lock-overlay" id="lockOverlay" style="display: none;">
-            <h2 style="color:#ffcc00; font-size:45px;">🪙</h2>
-            <h3 style="margin-top:10px;">This Episode is Locked</h3>
+            <h2 style="color:#ffcc00; font-size:45px;">🔒</h2>
+            <h3 style="margin-top:10px;">यह एपिसोड लॉक है</h3>
             <p id="lockCoinsTxt" style="color:var(--sub); font-size:13px; margin-top:5px;"></p>
             <button class="lock-btn" onclick="unlockEpisodeWithCoins()">Unlock Episode</button>
         </div>
     </div>
 
-    <div class="info-box">
-        <h1 class="drama-title" id="dramaTitle">Loading...</h1>
-        <p class="ep-title" id="nowPlayingTxt"></p>
-        <p style="color:var(--sub); font-size:14px; line-height:1.4;" id="dramaDesc"></p>
+    <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchViewTab('synopsis', this)">Synopsis</button>
+        <button class="tab-btn" onclick="switchViewTab('episodes', this)">Episodes</button>
     </div>
 
-    <h3 style="font-size: 16px; font-weight: bold; padding: 15px 15px 10px 15px;">All Episodes</h3>
-    <div class="ep-grid" id="episodesGrid"></div>
+    <div id="synopsisTab" class="tab-content active">
+        <div class="info-box">
+            <h1 class="drama-title" id="dramaTitle" style="font-size: 20px; margin-bottom: 10px;">Loading...</h1>
+            <p class="ep-title" id="nowPlayingTxt" style="margin-bottom: 12px; font-size: 13px;"></p>
+            <p id="dramaDesc"></p>
+        </div>
+    </div>
+
+    <div id="episodesTab" class="tab-content">
+        <div class="ep-grid" id="episodesGrid"></div>
+    </div>
 
 </div>
 
@@ -91,6 +112,14 @@
         else { window.location.href = "auth.html"; }
     });
 
+    function switchViewTab(tabId, btnElement) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        btnElement.classList.add('active');
+        document.getElementById(tabId + 'Tab').classList.add('active');
+    }
+
     function loadDramaDetails() {
         db.collection("stories").doc(storyId).get().then(doc => {
             if(doc.exists) {
@@ -104,36 +133,31 @@
     }
 
     function loadEpisodesGrid() {
-        // 🌟 सुरक्षात्मक कोडिंग: बिना इंडेक्स के फेलियर से बचने के लिए क्लाइंट-साइड सॉर्टिंग
         db.collection("chapters").where("story_id", "==", storyId).get()
         .then(snapshot => {
             const grid = document.getElementById('episodesGrid');
             grid.innerHTML = '';
             
             let chaptersArray = [];
-            snapshot.forEach(doc => {
-                chaptersArray.push(doc.data());
-            });
+            snapshot.forEach(doc => { chaptersArray.push(doc.data()); });
             
-            // जावास्क्रिप्ट से एपिसोड नंबर के आधार पर सॉर्ट करें
             chaptersArray.sort((a, b) => a.chapter_number - b.chapter_number);
             
             if(chaptersArray.length === 0) {
-                grid.innerHTML = '<p style="grid-column:span 5; color:#8e8e93; font-size:14px; text-align:center;">No episodes uploaded yet.</p>';
+                grid.innerHTML = '<p style="grid-column:span 4; color:#8e8e93; font-size:14px; text-align:center;">No episodes found.</p>';
                 return;
             }
 
             chaptersArray.forEach(ep => {
                 let activeClass = (ep.chapter_number === currentEpNum) ? 'active' : '';
-                let lockIcon = ep.is_premium ? ' 🪙' : '';
+                // 🔒 अगर प्रीमियम है तो ताला दिखाओ, नहीं तो खाली छोड़ो
+                let lockBadge = ep.is_premium ? '<span class="lock-icon-badge">🔒</span>' : '';
                 
-                grid.innerHTML += `<button class="ep-btn ${activeClass}" onclick="playEpisode(${ep.chapter_number})">${ep.chapter_number}${lockIcon}</button>`;
+                grid.innerHTML += `<button class="ep-btn ${activeClass}" onclick="playEpisode(${ep.chapter_number})">${ep.chapter_number}${lockBadge}</button>`;
                 
                 if(ep.chapter_number === currentEpNum) { selectedChapterData = ep; }
             });
             checkEpisodeLock();
-        }).catch(err => {
-            document.getElementById('episodesGrid').innerHTML = '<p style="grid-column:span 5; color:#ff2a5f;">Error loading episodes.</p>';
         });
     }
 
