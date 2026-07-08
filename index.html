@@ -7,6 +7,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
+    <script src="https://www.paypal.com/sdk/js?client-id=AaNuXZV5NUQJFPNnmSzCgqPh7uh-s8OG_-7pGz7Gw5TAiJQXA0FNFMJezYFLSwIZK8LW16lJvc4nvDwh&currency=USD"></script>
+
     <style>
         :root { --bg: #000000; --card: #1c1c1e; --primary: #ff2a5f; --text: #ffffff; --sub: #8e8e93; --border: #1c1c1e; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -122,7 +125,10 @@
             loadReelsData();
         }
         if(pageId === 'home') { loadHomeDramas('Popular'); }
-        if(pageId === 'member' && typeof initPayPalButtons === 'function') { initPayPalButtons(); }
+        
+        // ⚡ जैसे ही 'member' टैब खुले, यहाँ से डायरेक्ट पेपाल बटन्स रेंडर करो
+        if(pageId === 'member') { initPayPalButtons(); }
+        
         if(pageId === 'profile' && typeof loadProfileData === 'function') { loadProfileData(currentUser); }
         if(pageId === 'mylist' && typeof displayHistory === 'function') { displayHistory(); }
     }
@@ -150,7 +156,6 @@
                 container.innerHTML += `
                     <a href="view_story.html?id=${doc.id}" class="drama-card" style="text-decoration:none;" onclick="saveToHistory('${story.title.replace(/'/g, "\\'")}', '${thumbSrc}', '${dCat}')">
                         <div class="thumb-box" style="position:relative; width:100%; aspect-ratio:3/4; background:#1a1a1f; border-radius:8px; overflow:hidden;">
-                            <!-- ⚡ न्यू/हॉट वाले कलर्ड टैग्स यहाँ से आटोमैटिक क्लीन कर दिए गए हैं -->
                             <img class="thumb-img" src="${thumbSrc}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.src='https://via.placeholder.com/300x400/1a1a1f/ffffff?text=DramaBox'">
                             <span class="views-counter" style="position:absolute; bottom:4px; right:6px; font-size:11px; color:#fff; font-weight:bold; background:rgba(0,0,0,0.4); padding:1px 4px; border-radius:4px; z-index:2;">▶ 61.2M</span>
                         </div>
@@ -199,6 +204,54 @@
             history.push({ title: title, thumb: thumb, cat: cat });
             localStorage.setItem('user_history', JSON.stringify(history));
         }
+    }
+
+    // ⚡ पेपाल रेंडरिंग लॉजिक को यहाँ मुख्य स्क्रिप्ट में शिफ्ट कर दिया है ताकि फेच होने पर ब्लॉक न हो
+    function initPayPalButtons() {
+        if (typeof paypal === 'undefined') {
+            setTimeout(initPayPalButtons, 300);
+            return;
+        }
+
+        const weeklyBox = document.getElementById('paypal-weekly-button');
+        if(weeklyBox && weeklyBox.innerHTML === "") {
+            paypal.Buttons({
+                style: { layout: 'horizontal', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
+                createOrder: function(data, actions) {
+                    return actions.order.create({ purchase_units: [{ amount: { value: '0.99' }, description: 'Weekly Premium Pass' }] });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(function() { updateUserPremiumStatus(7); });
+                }
+            }).render('#paypal-weekly-button');
+        }
+
+        const monthlyBox = document.getElementById('paypal-monthly-button');
+        if(monthlyBox && monthlyBox.innerHTML === "") {
+            paypal.Buttons({
+                style: { layout: 'horizontal', color: 'gold', shape: 'pill', label: 'pay', height: 40 },
+                createOrder: function(data, actions) {
+                    return actions.order.create({ purchase_units: [{ amount: { value: '2.99' }, description: 'Monthly Super Value Pass' }] });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(function() { updateUserPremiumStatus(30); });
+                }
+            }).render('#paypal-monthly-button');
+        }
+    }
+
+    function updateUserPremiumStatus(days) {
+        if(!currentUser) return;
+        const expireDate = new Date();
+        expireDate.setDate(expireDate.getDate() + days);
+
+        db.collection("users").doc(currentUser.uid).update({
+            is_premium: true,
+            premium_until: firebase.firestore.Timestamp.fromDate(expireDate)
+        }).then(() => {
+            alert("🎉 Membership Activated Successfully!");
+            switchTab('home');
+        }).catch(err => alert("DB error: " + err.message));
     }
 </script>
 </body>

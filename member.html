@@ -3,14 +3,10 @@
     .member-nav-header { display: flex; align-items: center; gap: 15px; padding: 15px 0; background: #000; border-bottom: 1px solid #1c1c1e; }
     .back-arrow-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; }
     .back-arrow-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-    
-    /* ⚡ बटन बॉक्स को क्लिक करने योग्य और सुंदर बनाने के लिए सीएसएस */
-    .wallet-card-grid { background: #121214; padding: 18px; border-radius: 12px; margin: 15px 0; display: flex; flex-direction: column; gap: 14px; border: 1px solid #1c1c1e; width: 100%; box-sizing: border-box; }
+    .wallet-card-grid { background: #121214; padding: 16px; border-radius: 12px; margin: 15px 0; display: flex; flex-direction: column; gap: 12px; border: 1px solid #1c1c1e; width: 100%; box-sizing: border-box; }
     .plan-info-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
     .paypal-btn-holder { width: 100%; margin-top: 5px; min-height: 40px; }
 </style>
-
-<script src="https://www.paypal.com/sdk/js?client-id=AaNuXZV5NUQJFPNnmSzCgqPh7uh-s8OG_-7pGz7Gw5TAiJQXA0FNFMJezYFLSwIZK8LW16lJvc4nvDwh&currency=USD"></script>
 
 <div class="member-container-box">
     <div class="member-nav-header">
@@ -42,68 +38,3 @@
         <div id="paypal-monthly-button" class="paypal-btn-holder"></div>
     </div>
 </div>
-
-<script>
-    // ⚡ पेपाल के ऑफिशियल बटनों को एक्टिवेट करने का लॉजिक
-    function initPayPalButtons() {
-        if (typeof paypal === 'undefined') {
-            setTimeout(initPayPalButtons, 300);
-            return;
-        }
-
-        // 1. साप्ताहिक बटन चालू करें
-        const weeklyContainer = document.getElementById('paypal-weekly-button');
-        if(weeklyContainer && weeklyContainer.innerHTML === "") {
-            paypal.Buttons({
-                style: { layout: 'horizontal', color: 'blue', shape: 'pill', label: 'pay', height: 40 },
-                createOrder: function(data, actions) {
-                    return actions.order.create({
-                        purchase_units: [{ amount: { value: '0.99' }, description: 'Weekly Premium Pass' }]
-                    });
-                },
-                onApprove: function(data, actions) {
-                    return actions.order.capture().then(function(details) {
-                        updateUserPremiumStatus(7);
-                    });
-                }
-            }).render('#paypal-weekly-button');
-        }
-
-        // 2. मासिक बटन चालू करें
-        const monthlyContainer = document.getElementById('paypal-monthly-button');
-        if(monthlyContainer && monthlyContainer.innerHTML === "") {
-            paypal.Buttons({
-                style: { layout: 'horizontal', color: 'gold', shape: 'pill', label: 'pay', height: 40 },
-                createOrder: function(data, actions) {
-                    return actions.order.create({
-                        purchase_units: [{ amount: { value: '2.99' }, description: 'Monthly Super Value Pass' }]
-                    });
-                },
-                onApprove: function(data, actions) {
-                    return actions.order.capture().then(function(details) {
-                        updateUserPremiumStatus(30);
-                    });
-                }
-            }).render('#paypal-monthly-button');
-        }
-    }
-
-    function updateUserPremiumStatus(days) {
-        if(!firebase.auth().currentUser) return;
-        const uid = firebase.auth().currentUser.uid;
-        
-        const expireDate = new Date();
-        expireDate.setDate(expireDate.getDate() + days);
-
-        firebase.firestore().collection("users").doc(uid).update({
-            is_premium: true,
-            premium_until: firebase.firestore.Timestamp.fromDate(expireDate)
-        }).then(() => {
-            alert("🎉 Membership Activated Successfully!");
-            if(typeof switchTab === 'function') { switchTab('home'); }
-        }).catch(err => alert("Payment success, but DB error: " + err.message));
-    }
-
-    // जब पेज लोड हो, तब बटन चालू कर दें
-    setTimeout(initPayPalButtons, 500);
-</script>
