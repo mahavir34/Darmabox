@@ -145,8 +145,8 @@
                 const dTag = (i % 2 === 0) ? "Hot" : "New";
                 i++;
                 
-                // 🌟 अगर इमेज लिंक टूट जाए तो बैकअप के लिए एक सुंदर डिफ़ॉल्ट बैकग्राउंड रेंडर
-                let thumbSrc = story.thumbnail_url || 'https://via.placeholder.com/300x400/1a1a1f/ffffff?text=DramaBox';
+                // ⚡ यहाँ नया 'story.cover_url' रिप्लेस कर दिया है ताकि फ़ायरबेस से थंबनेल इमेज एकदम परफेक्ट दिखे
+                let thumbSrc = story.cover_url || 'https://via.placeholder.com/300x400/1a1a1f/ffffff?text=DramaBox';
                 
                 container.innerHTML += `
                     <a href="view_story.html?id=${doc.id}" class="drama-card" style="text-decoration:none;" onclick="saveToHistory('${story.title.replace(/'/g, "\\'")}', '${thumbSrc}', '${dCat}')">
