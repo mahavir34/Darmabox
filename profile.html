@@ -120,7 +120,7 @@
         <div class="wallet-header-box">
             <div><p style="font-size:12px; color:#8e8e93;">Coins</p><h3 style="font-size:20px; color:#ffcc00; margin-top:4px;" id="subRefCoins">0</h3></div>
             <div style="width:1px; background:#2c2c2e; height:40px;"></div>
-            <div><p style="font-size:12px; color:#8e8e93;">Reward Coins</p><h3 style="font-size:20px; color:#ff2a5f; margin-top:4px;">100</h3></div>
+            <div><p style="font-size:12px; color:#8e8e93;">Reward Coins</p><h3 style="font-size:20px; color:#ff2a5f; margin-top:4px;" id="rewardCoinsBox">100</h3></div>
         </div>
         <div class="sub-tab-bar">
             <span class="sub-tab-item active">Transaction History</span>
@@ -142,21 +142,21 @@
             <div class="checkin-card"><p>+20</p><p style="font-size:10px; color:#8e8e93; margin-top:4px;">Day 3</p></div>
             <div class="checkin-card"><p>+20</p><p style="font-size:10px; color:#8e8e93; margin-top:4px;">Day 4</p></div>
         </div>
-        <button class="join-btn" style="width:100%; background:linear-gradient(90deg, #ff2a5f, #ff7e00); color:#fff; padding:12px; border-radius:25px; margin-bottom:20px;" onclick="alert('Claimed +10 Check-in Coins!')">Watch Ad to earn 30 coins</button>
+        <button class="join-btn" style="width:100%; background:linear-gradient(90deg, #ff2a5f, #ff7e00); color:#fff; padding:12px; border-radius:25px; margin-bottom:20px;" onclick="claimRewardCoins(30)">Watch Ad to earn 30 coins</button>
         
         <h3 style="font-size:14px; margin-bottom:12px;">Tasks list</h3>
         <div class="menu-list" style="padding:0 12px;">
             <div class="menu-item" style="padding:12px 0;">
                 <div><p style="font-size:14px;">Follow us on Facebook</p><p style="font-size:11px; color:#8e8e93; margin-top:2px;">+20 Reward coins</p></div>
-                <button class="reward-task-btn" onclick="this.innerText='Followed'; this.classList.add('done')">Follow</button>
+                <button class="reward-task-btn" onclick="claimTaskCoins(20, this, 'Followed')">Follow</button>
             </div>
             <div class="menu-item" style="padding:12px 0;">
                 <div><p style="font-size:14px;">Follow us on YouTube</p><p style="font-size:11px; color:#8e8e93; margin-top:2px;">+20 Reward coins</p></div>
-                <button class="reward-task-btn" onclick="this.innerText='Subscribed'; this.classList.add('done')">Follow</button>
+                <button class="reward-task-btn" onclick="claimTaskCoins(20, this, 'Subscribed')">Follow</button>
             </div>
             <div class="menu-item" style="padding:12px 0;">
                 <div><p style="font-size:14px;">Follow us on TikTok</p><p style="font-size:11px; color:#8e8e93; margin-top:2px;">+20 Reward coins</p></div>
-                <button class="reward-task-btn" onclick="this.innerText='Followed'; this.classList.add('done')">Follow</button>
+                <button class="reward-task-btn" onclick="claimTaskCoins(20, this, 'Followed')">Follow</button>
             </div>
         </div>
     </div>
@@ -191,7 +191,7 @@
 </div>
 
 <script>
-    // फ़ायरबेस डेटा सिंक मैनेजर फ़ंक्शन
+    // फ़ायरबेस लाइव डेटा रेंडर
     function loadProfileData(user) {
         if(!user) return;
         
@@ -201,7 +201,7 @@
         
         document.getElementById('profId').innerText = "ID: " + user.uid.substring(0, 9).toUpperCase() + " | Following 0";
         
-        db.collection("users").doc(user.uid).get().then(doc => {
+        firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
             if(doc.exists) {
                 const userData = doc.data();
                 const coinsAmt = userData.coins ?? 0;
@@ -209,6 +209,58 @@
                 document.getElementById('subRefCoins').innerText = coinsAmt;
             }
         }).catch(err => { console.log("Coins sync failed"); });
+    }
+
+    // ⚡ एड्स के सिक्के फ़ायरबेस डेटाबेस में जोड़ने का ऑटो-फंक्शन
+    function claimRewardCoins(amount) {
+        const user = firebase.auth().currentUser;
+        if(!user) return;
+
+        const userRef = firebase.firestore().collection("users").doc(user.uid);
+        
+        firebase.firestore().runTransaction((transaction) => {
+            return transaction.get(userRef).then((userDoc) => {
+                let currentCoins = 0;
+                if (userDoc.exists) {
+                    currentCoins = userDoc.data().coins ?? 0;
+                }
+                let newCoins = currentCoins + amount;
+                transaction.set(userRef, { coins: newCoins }, { merge: true });
+                return newCoins;
+            });
+        }).then((newCoins) => {
+            alert(`Claimed +${amount} Check-in Coins! 🎉`);
+            document.getElementById('profCoins').innerText = "🪙 " + newCoins;
+            document.getElementById('subRefCoins').innerText = newCoins;
+        }).catch(err => alert("Error adding coins: " + err.message));
+    }
+
+    // ⚡ टास्क लिस्ट कंप्लीट करके सिक्के लेने का वर्किंग फंक्शन
+    function claimTaskCoins(amount, btnElement, statusText) {
+        if(btnElement.classList.contains('done')) return;
+        
+        const user = firebase.auth().currentUser;
+        if(!user) return;
+
+        const userRef = firebase.firestore().collection("users").doc(user.uid);
+        
+        firebase.firestore().runTransaction((transaction) => {
+            return transaction.get(userRef).then((userDoc) => {
+                let currentCoins = 0;
+                if (userDoc.exists) {
+                    currentCoins = userDoc.data().coins ?? 0;
+                }
+                return currentCoins + amount;
+            });
+        }).then((newCoins) => {
+            return userRef.set({ coins: newCoins }, { merge: true }).then(() => {
+                btnElement.innerText = statusText;
+                btnElement.classList.add('done');
+                document.getElementById('profCoins').innerText = "🪙 " + newCoins;
+                document.getElementById('subRefCoins').innerText = newCoins;
+                alert(`Task Reward +${amount} Coins added!`);
+            });
+        }).catch(err => alert("Error: " + err.message));
     }
 
     function handleLogout() {
