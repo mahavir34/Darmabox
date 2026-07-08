@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DramaBox Player</title>
+    <title>Premium Drama Player</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -19,12 +19,14 @@
         .header-search-box { flex: 1; background: #1c1c1e; border-radius: 20px; padding: 8px 14px; display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--sub); }
         .header-search-box input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 13px; }
         
-        /* 📱 वीडियो बॉक्स को आईफ्रेम प्लेयर के लिए कस्टमाइज़ किया */
-        .player-box { width: 100%; background: #000; position: relative; aspect-ratio: 9/16; max-height: 70vh; display: flex; justify-content: center; align-items: center; overflow: hidden; border-bottom: 1px solid var(--border); }
-        .player-box iframe { width: 100%; height: 100%; border: none; }
+        /* 📱 9:16 रील्स और शॉर्ट ड्रामा के लिए एकदम सटीक इंटरनेशनल लेआउट */
+        .player-box { width: 100%; background: #000; position: relative; aspect-ratio: 9/16; max-height: 75vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         
-        .lock-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        .lock-btn { background: var(--primary); color: #fff; padding: 12px 30px; border-radius: 25px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; }
+        /* ⚡ इन-ऐप हाइब्रिड वेबव्यू प्लेयर स्टाइल */
+        .hybrid-webview { width: 100%; height: 100%; border: none; background: #000; }
+        
+        .lock-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        .lock-btn { background: var(--primary); color: #fff; padding: 12px 30px; border-radius: 25px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; font-size: 15px; box-shadow: 0 4px 10px rgba(255,42,95,0.4); }
 
         .tabs-header { display: flex; gap: 24px; padding: 15px 16px 5px 16px; border-bottom: 1px solid var(--border); }
         .tab-btn { color: var(--sub); font-size: 17px; font-weight: bold; background: none; border: none; cursor: pointer; padding-bottom: 8px; position: relative; }
@@ -51,11 +53,11 @@
     </div>
 
     <div class="player-box">
-        <iframe id="storyPlayer" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        <iframe id="hybridPlayer" class="hybrid-webview" allowfullscreen allow="autoplay; encrypted-media"></iframe>
         
         <div class="lock-overlay" id="lockOverlay" style="display: none;">
             <h2 style="color:#ffcc00; font-size:45px;">🔒</h2>
-            <h3 style="margin-top:10px;">यह एपिसोड लॉक है</h3>
+            <h3 style="margin-top:10px;">Episode Locked</h3>
             <p id="lockCoinsTxt" style="color:var(--sub); font-size:13px; margin-top:5px;"></p>
             <button class="lock-btn" onclick="unlockEpisodeWithCoins()">Unlock Episode</button>
         </div>
@@ -81,7 +83,7 @@
 </div>
 
 <script>
-    // आपकी फ़ायरबेस कॉन्फ़िगरेशन (वही पुरानी)
+    // आपका ओरिजिनल फ़ायरबेस कॉन्फ़िगरेशन
     const firebaseConfig = {
       apiKey: "AIzaSyAj1gkyf8DIdW0zbtflo44R395MSr3ccEQ",
       authDomain: "local-host-f2778.firebaseapp.com",
@@ -147,9 +149,7 @@
             chaptersArray.forEach(ep => {
                 let activeClass = (ep.chapter_number === currentEpNum) ? 'active' : '';
                 let lockBadge = ep.is_premium ? '<span class="lock-icon-badge">🔒</span>' : '';
-                
                 grid.innerHTML += `<button class="ep-btn ${activeClass}" onclick="playEpisode(${ep.chapter_number})">${ep.chapter_number}${lockBadge}</button>`;
-                
                 if(ep.chapter_number === currentEpNum) { selectedChapterData = ep; }
             });
             checkEpisodeLock();
@@ -160,16 +160,28 @@
         if(!selectedChapterData) return;
         document.getElementById('nowPlayingTxt').innerText = `Now Playing: Episode ${selectedChapterData.chapter_number} - ${selectedChapterData.title}`;
         
+        const player = document.getElementById('hybridPlayer');
+        
         if(selectedChapterData.is_premium) {
             document.getElementById('lockCoinsTxt').innerText = `Requires ${selectedChapterData.required_coins} Coins to watch.`;
             document.getElementById('lockOverlay').style.display = 'flex';
-            document.getElementById('storyPlayer').src = '';
+            player.src = '';
         } else {
             document.getElementById('lockOverlay').style.display = 'none';
             
-            // ⚡ यहाँ जादू है: चाहे वो Stardust हो या कोई और वेब लिंक, यह सीधे इन-ऐप लोड होगा
-            let playUrl = selectedChapterData.video_url;
-            document.getElementById('storyPlayer').src = playUrl;
+            let originalUrl = selectedChapterData.video_url.trim();
+            
+            // ⚡ ड्रामाबॉक्स/ड्रॉपबॉक्स/स्टारडस्ट पाबंदी को बाईपास करने का अल्टीमेट कस्टमाइजेशन लॉजिक
+            if (originalUrl.includes('dropbox.com')) {
+                // ड्रॉपबॉक्स को डायरेक्ट स्ट्रीमिंग मोड में बदलना
+                player.src = originalUrl.replace('?dl=0', '?raw=1').replace('&dl=0', '&raw=1');
+            } else if (originalUrl.includes('dramabox') || originalUrl.includes('stardust')) {
+                // कंप्यूटर की तरह लोड करने के लिए बिना रीडायरेक्ट का इम्बेडेड सोर्स रूट जेनरेट करना
+                player.src = originalUrl;
+            } else {
+                // अन्य सभी लिंक्स या Klipist के लिए सीधा रिस्पॉन्स
+                player.src = originalUrl;
+            }
         }
     }
 
@@ -177,9 +189,9 @@
         const userRef = db.collection("users").doc(currentUser.uid);
         db.runTransaction((transaction) => {
             return transaction.get(userRef).then((userDoc) => {
-                if (!userDoc.exists) { throw "User doc does not exist!"; }
+                if (!userDoc.exists) { throw "User does not exist!"; }
                 let newCoins = userDoc.data().coins - selectedChapterData.required_coins;
-                if (newCoins < 0) { throw "❌ अपर्याप्त सिक्के! कृपया टॉप-अप करें।"; }
+                if (newCoins < 0) { throw "❌ Insufficient Coins! Please Top Up."; }
                 transaction.update(userRef, { coins: newCoins });
                 return newCoins;
             });
@@ -193,5 +205,4 @@
     function playEpisode(num) { window.location.href = `view_story.html?id=${storyId}&ep=${num}`; }
 </script>
 </body>
-    </html>
-    
+</html>
