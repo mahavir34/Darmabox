@@ -156,6 +156,7 @@
         });
     }
 
+    // ⚡ यहाँ आपका बिल्कुल नया, सुरक्षित और एंटी-ब्लॉक कोडिंग लॉजिक पूरी तरह सेट है
     function checkEpisodeLock() {
         if(!selectedChapterData) return;
         document.getElementById('nowPlayingTxt').innerText = `Now Playing: Episode ${selectedChapterData.chapter_number} - ${selectedChapterData.title}`;
@@ -171,15 +172,20 @@
             
             let originalUrl = selectedChapterData.video_url.trim();
             
-            // ⚡ ड्रामाबॉक्स/ड्रॉपबॉक्स/स्टारडस्ट पाबंदी को बाईपास करने का अल्टीमेट कस्टमाइजेशन लॉजिक
+            // 📌 ड्रॉपबॉक्स को डायरेक्ट वीडियो फ़ाइल मोड में बदलना
             if (originalUrl.includes('dropbox.com')) {
-                // ड्रॉपबॉक्स को डायरेक्ट स्ट्रीमिंग मोड में बदलना
                 player.src = originalUrl.replace('?dl=0', '?raw=1').replace('&dl=0', '&raw=1');
-            } else if (originalUrl.includes('dramabox') || originalUrl.includes('stardust')) {
-                // कंप्यूटर की तरह लोड करने के लिए बिना रीडायरेक्ट का इम्बेडेड सोर्स रूट जेनरेट करना
-                player.src = originalUrl;
-            } else {
-                // अन्य सभी लिंक्स या Klipist के लिए सीधा रिस्पॉन्स
+            } 
+            // 📌 ड्रामाबॉक्स का लिंक होने पर उसे सीधे सही वेब प्लेयर मोड पर रीडायरेक्ट करना ताकि "Code/ID" एरर न आए
+            else if (originalUrl.includes('dramabox') || originalUrl.includes('stardust')) {
+                let cleanWebUrl = originalUrl;
+                if(originalUrl.includes('android/open')) {
+                    cleanWebUrl = originalUrl.replace('app.dramaboxdb.com/android/open', 'www.dramaboxdb.com/play');
+                }
+                player.src = cleanWebUrl;
+            } 
+            // 📌 बाकी अन्य सभी लिंक्स (जैसे Klipist या खुद का कोई लिंक) के लिए
+            else {
                 player.src = originalUrl;
             }
         }
