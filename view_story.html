@@ -152,6 +152,7 @@
         });
     }
 
+    // ⚡ यहाँ आपका बिल्कुल नया, सुरक्षित और ड्रॉपबॉक्स एंटी-ब्लॉक कोडिंग लॉजिक अपडेटेड है
     function checkEpisodeLock() {
         if(!selectedChapterData) return;
         document.getElementById('nowPlayingTxt').innerText = `Now Playing: Episode ${selectedChapterData.chapter_number} - ${selectedChapterData.title}`;
@@ -166,15 +167,24 @@
             document.getElementById('lockOverlay').style.display = 'none';
             let originalUrl = selectedChapterData.video_url.trim();
             
+            // 🛠️ ड्रॉपबॉक्स लिंक मिलते ही उसे सीधे स्ट्रीम करने का स्मार्ट कस्टमाइजेशन लॉजिक
             if (originalUrl.includes('dropbox.com')) {
-                player.src = originalUrl.replace('?dl=0', '?raw=1').replace('&dl=0', '&raw=1');
-            } else if (originalUrl.includes('dramabox') || originalUrl.includes('stardust')) {
+                let cleanDropboxUrl = originalUrl
+                    .replace('?dl=0', '?raw=1')
+                    .replace('&dl=0', '&raw=1')
+                    .replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+                player.src = cleanDropboxUrl;
+            } 
+            // 🛠️ ड्रामाबॉक्स और स्टारडस्ट के ओरिजिनल लिंक्स को रीडायरेक्ट होने से बचाने के लिए
+            else if (originalUrl.includes('dramabox') || originalUrl.includes('stardust')) {
                 let cleanWebUrl = originalUrl;
                 if(originalUrl.includes('android/open')) {
                     cleanWebUrl = originalUrl.replace('app.dramaboxdb.com/android/open', 'www.dramaboxdb.com/play');
                 }
                 player.src = cleanWebUrl;
-            } else {
+            } 
+            // 🛠️ बाकी अन्य सभी डायरेक्ट लिंक्स (जैसे Klipist या खुद का कोई लिंक) के लिए
+            else {
                 player.src = originalUrl;
             }
         }
