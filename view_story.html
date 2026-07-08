@@ -19,10 +19,7 @@
         .header-search-box { flex: 1; background: #1c1c1e; border-radius: 20px; padding: 8px 14px; display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--sub); }
         .header-search-box input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 13px; }
         
-        /* 📱 9:16 रील्स और शॉर्ट ड्रामा के लिए एकदम सटीक इंटरनेशनल लेआउट */
         .player-box { width: 100%; background: #000; position: relative; aspect-ratio: 9/16; max-height: 75vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        
-        /* ⚡ इन-ऐप हाइब्रिड वेबव्यू प्लेयर स्टाइल */
         .hybrid-webview { width: 100%; height: 100%; border: none; background: #000; }
         
         .lock-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
@@ -83,7 +80,6 @@
 </div>
 
 <script>
-    // आपका ओरिजिनल फ़ायरबेस कॉन्फ़िगरेशन
     const firebaseConfig = {
       apiKey: "AIzaSyAj1gkyf8DIdW0zbtflo44R395MSr3ccEQ",
       authDomain: "local-host-f2778.firebaseapp.com",
@@ -156,7 +152,6 @@
         });
     }
 
-    // ⚡ यहाँ आपका बिल्कुल नया, सुरक्षित और एंटी-ब्लॉक कोडिंग लॉजिक पूरी तरह सेट है
     function checkEpisodeLock() {
         if(!selectedChapterData) return;
         document.getElementById('nowPlayingTxt').innerText = `Now Playing: Episode ${selectedChapterData.chapter_number} - ${selectedChapterData.title}`;
@@ -169,23 +164,17 @@
             player.src = '';
         } else {
             document.getElementById('lockOverlay').style.display = 'none';
-            
             let originalUrl = selectedChapterData.video_url.trim();
             
-            // 📌 ड्रॉपबॉक्स को डायरेक्ट वीडियो फ़ाइल मोड में बदलना
             if (originalUrl.includes('dropbox.com')) {
                 player.src = originalUrl.replace('?dl=0', '?raw=1').replace('&dl=0', '&raw=1');
-            } 
-            // 📌 ड्रामाबॉक्स का लिंक होने पर उसे सीधे सही वेब प्लेयर मोड पर रीडायरेक्ट करना ताकि "Code/ID" एरर न आए
-            else if (originalUrl.includes('dramabox') || originalUrl.includes('stardust')) {
+            } else if (originalUrl.includes('dramabox') || originalUrl.includes('stardust')) {
                 let cleanWebUrl = originalUrl;
                 if(originalUrl.includes('android/open')) {
                     cleanWebUrl = originalUrl.replace('app.dramaboxdb.com/android/open', 'www.dramaboxdb.com/play');
                 }
                 player.src = cleanWebUrl;
-            } 
-            // 📌 बाकी अन्य सभी लिंक्स (जैसे Klipist या खुद का कोई लिंक) के लिए
-            else {
+            } else {
                 player.src = originalUrl;
             }
         }
