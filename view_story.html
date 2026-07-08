@@ -19,14 +19,13 @@
         .header-search-box { flex: 1; background: #1c1c1e; border-radius: 20px; padding: 8px 14px; display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--sub); }
         .header-search-box input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 13px; }
         
-        .player-box { width: 100%; background: #000; position: relative; aspect-ratio: 9/16; max-height: 70vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        .player-box video { width: 100%; height: 100%; object-fit: cover; }
-        .play-center-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        /* 📱 वीडियो बॉक्स को आईफ्रेम प्लेयर के लिए कस्टमाइज़ किया */
+        .player-box { width: 100%; background: #000; position: relative; aspect-ratio: 9/16; max-height: 70vh; display: flex; justify-content: center; align-items: center; overflow: hidden; border-bottom: 1px solid var(--border); }
+        .player-box iframe { width: 100%; height: 100%; border: none; }
         
         .lock-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         .lock-btn { background: var(--primary); color: #fff; padding: 12px 30px; border-radius: 25px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; }
 
-        /* 👑 DramaBox स्टाइल टैब बार */
         .tabs-header { display: flex; gap: 24px; padding: 15px 16px 5px 16px; border-bottom: 1px solid var(--border); }
         .tab-btn { color: var(--sub); font-size: 17px; font-weight: bold; background: none; border: none; cursor: pointer; padding-bottom: 8px; position: relative; }
         .tab-btn.active { color: #fff; }
@@ -35,14 +34,11 @@
         .tab-content { display: none; padding: 16px; }
         .tab-content.active { display: block; }
 
-        /* 📱 DramaBox जैसा चौकोर बटन ग्रिड */
         .ep-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
         .ep-btn { background: var(--card); border: 1px solid #222; color: #fff; padding: 14px 0; text-align: center; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; }
         .ep-btn.active { background: #222; border-color: var(--primary); color: var(--primary); }
         
-        /* ताला (Lock) का आइकॉन स्टाइल */
         .lock-icon-badge { position: absolute; bottom: 3px; right: 4px; font-size: 10px; opacity: 0.8; }
-        
         .info-box p { color: var(--sub); font-size: 14px; line-height: 1.5; }
     </style>
 </head>
@@ -55,8 +51,7 @@
     </div>
 
     <div class="player-box">
-        <video id="storyPlayer" playsinline></video>
-        <button id="playBtn" class="play-center-btn" style="display: none;">▶</button>
+        <iframe id="storyPlayer" allowfullscreen allow="autoplay; encrypted-media"></iframe>
         
         <div class="lock-overlay" id="lockOverlay" style="display: none;">
             <h2 style="color:#ffcc00; font-size:45px;">🔒</h2>
@@ -86,6 +81,7 @@
 </div>
 
 <script>
+    // आपकी फ़ायरबेस कॉन्फ़िगरेशन (वही पुरानी)
     const firebaseConfig = {
       apiKey: "AIzaSyAj1gkyf8DIdW0zbtflo44R395MSr3ccEQ",
       authDomain: "local-host-f2778.firebaseapp.com",
@@ -150,7 +146,6 @@
 
             chaptersArray.forEach(ep => {
                 let activeClass = (ep.chapter_number === currentEpNum) ? 'active' : '';
-                // 🔒 अगर प्रीमियम है तो ताला दिखाओ, नहीं तो खाली छोड़ो
                 let lockBadge = ep.is_premium ? '<span class="lock-icon-badge">🔒</span>' : '';
                 
                 grid.innerHTML += `<button class="ep-btn ${activeClass}" onclick="playEpisode(${ep.chapter_number})">${ep.chapter_number}${lockBadge}</button>`;
@@ -169,12 +164,12 @@
             document.getElementById('lockCoinsTxt').innerText = `Requires ${selectedChapterData.required_coins} Coins to watch.`;
             document.getElementById('lockOverlay').style.display = 'flex';
             document.getElementById('storyPlayer').src = '';
-            document.getElementById('playBtn').style.display = 'none';
         } else {
             document.getElementById('lockOverlay').style.display = 'none';
-            let playUrl = selectedChapterData.video_url.replace('?dl=0', '?raw=1').replace('&dl=0', '&raw=1');
+            
+            // ⚡ यहाँ जादू है: चाहे वो Stardust हो या कोई और वेब लिंक, यह सीधे इन-ऐप लोड होगा
+            let playUrl = selectedChapterData.video_url;
             document.getElementById('storyPlayer').src = playUrl;
-            document.getElementById('playBtn').style.display = 'block';
         }
     }
 
@@ -196,16 +191,7 @@
     }
 
     function playEpisode(num) { window.location.href = `view_story.html?id=${storyId}&ep=${num}`; }
-
-    const video = document.getElementById('storyPlayer');
-    const playBtn = document.getElementById('playBtn');
-    if(playBtn && video) {
-        playBtn.addEventListener('click', function() {
-            if(video.paused) { video.muted = false; video.play(); playBtn.innerHTML = "⏸️"; playBtn.style.opacity = "0"; }
-            else { video.pause(); playBtn.innerHTML = "▶"; playBtn.style.opacity = "1"; }
-        });
-        video.addEventListener('click', () => playBtn.click());
-    }
 </script>
 </body>
-</html>
+    </html>
+    
